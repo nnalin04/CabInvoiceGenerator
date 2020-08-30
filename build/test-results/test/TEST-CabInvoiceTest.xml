@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="CabInvoiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-08-30T19:04:39" hostname="EEE1407203" time="0.004">
+<testsuite name="CabInvoiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-08-30T19:35:33" hostname="EEE1407203" time="0.012">
   <properties/>
-  <testcase name="givenDistanceAndTime_ShouldReturnTotalFare" classname="CabInvoiceTest" time="0.004"/>
+  <testcase name="givenMultipleRides_ShouldReturnTotalFare" classname="CabInvoiceTest" time="0.012"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
