@@ -9,7 +9,7 @@ public class CabInvoiceTest {
     Ride[] rides = null;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         invoiceGenerator = new InvoiceGenerator();
         rideRepository = new RideRepository();
         invoiceGenerator.setRideRepository(rideRepository);
@@ -19,20 +19,36 @@ public class CabInvoiceTest {
     }
 
     @Test
-    public void givenDistanceAndTime_ShouldReturnTotalFare() {
-        double distance = 2.0;
-        int time = 5;
-        double fare = invoiceGenerator.calculateFare(distance, time);
-        Assert.assertEquals(25, fare, 0.0);
+    public void givenDistanceAndTime_WhenNormal_ShouldReturnTotalFare() {
+        rides = new Ride[]{new Ride(CabRide.NORMAL, 2.0, 5)};
+        InvoiceSummary summary = invoiceGenerator.calculateFare(rides);
+        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(1, 25.0);
+        Assert.assertEquals(expectedInvoiceSummary, summary);
     }
 
     @Test
-    public void givenLessDistanceAndTime_ShouldReturnMinFare() {
-        double distance = 0.1;
-        int time = 1;
-        double fare = invoiceGenerator.calculateFare(distance, time);
-        Assert.assertEquals(5, fare, 0.0);
-    }   
+    public void givenLessDistanceAndTime_WhenNormal_ShouldReturnMinFare() {
+        rides = new Ride[]{new Ride(CabRide.NORMAL, 0.1, 1)};
+        InvoiceSummary summary = invoiceGenerator.calculateFare(rides);
+        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(1, 5.0);
+        Assert.assertEquals(expectedInvoiceSummary, summary);
+    }
+
+    @Test
+    public void givenDistanceAndTime_WhenPremium_ShouldReturnTotalFare() {
+        rides = new Ride[]{new Ride(CabRide.PREMIUM, 2.0, 5)};
+        InvoiceSummary summary = invoiceGenerator.calculateFare(rides);
+        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(1, 40.0);
+        Assert.assertEquals(expectedInvoiceSummary, summary);
+    }
+
+    @Test
+    public void givenLessDistanceAndTime_WhenPremium_ShouldReturnMinFare() {
+        rides = new Ride[]{new Ride(CabRide.PREMIUM, 0.1, 1)};
+        InvoiceSummary summary = invoiceGenerator.calculateFare(rides);
+        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(1, 20.0);
+        Assert.assertEquals(expectedInvoiceSummary, summary);
+    }
 
     @Test
     public void givenMultipleRide_ShouldReturnInvoiceSummary() {
@@ -42,11 +58,60 @@ public class CabInvoiceTest {
     }
 
     @Test
-    public void givenUserIdAndRides_ShouldReturnInvoiceSummary() {
+    public void givenUserIdAndRides_ShouldReturnInvoiceSummary() throws InvoiceGeneratorException {
         String userId = "abc@abc.com";
         invoiceGenerator.addRides(userId, rides);
         InvoiceSummary summary = invoiceGenerator.getInvoiceSummary(userId);
         InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2, 45.0);
         Assert.assertEquals(expectedInvoiceSummary, summary);
+    }
+
+    @Test
+    public void givenUserIdAndRideOfDifferentType_ShouldReturnInvoiceSummary() throws InvoiceGeneratorException {
+        String userId = "abc@abc.com";
+        invoiceGenerator.addRides(userId, rides);
+        InvoiceSummary summary = invoiceGenerator.getInvoiceSummary(userId);
+        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2, 30.0);
+        Assert.assertNotEquals(expectedInvoiceSummary, summary);
+    }
+
+    @Test
+    public void givenEmptyUserId_ShouldReturnInvoiceSummary() throws InvoiceGeneratorException {
+        try {
+            String userId = "";
+            invoiceGenerator.addRides(userId, rides);
+            InvoiceSummary summary = invoiceGenerator.getInvoiceSummary(userId);
+            InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2, 45.0);
+            Assert.assertNotEquals(expectedInvoiceSummary, summary);
+        }catch (InvoiceGeneratorException e){
+            Assert.assertEquals(InvoiceGeneratorException.ExceptionType.EMPTY, e.type);
+        }
+    }
+
+    @Test
+    public void givenNullUserId_ShouldReturnInvoiceSummary() {
+        try {
+            String userId = null;
+            invoiceGenerator.addRides(userId, rides);
+            InvoiceSummary summary = invoiceGenerator.getInvoiceSummary(userId);
+            InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2, 45.0);
+            Assert.assertNotEquals(expectedInvoiceSummary, summary);
+        }catch (InvoiceGeneratorException e){
+            Assert.assertEquals(InvoiceGeneratorException.ExceptionType.EMPTY, e.type);
+        }
+    }
+
+    @Test
+    public void givenUserId_ShouldReturnInvoiceSummary() {
+        try {
+            String userId = "abc";
+            String userId1 = "@abc";
+            invoiceGenerator.addRides(userId, rides);
+            InvoiceSummary summary = invoiceGenerator.getInvoiceSummary(userId1);
+            InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(2, 45.0);
+            Assert.assertNotEquals(expectedInvoiceSummary, summary);
+        }catch (InvoiceGeneratorException e){
+            Assert.assertEquals(InvoiceGeneratorException.ExceptionType.INVALID_USERID, e.type);
+        }
     }
 }

@@ -1,17 +1,9 @@
-public class InvoiceGenerator<rideRepository> {
+public class InvoiceGenerator {
 
-    private static final int COST_PER_TIME = 1;
-    private static final double MIN_COST_PER_KM = 10;
-    private static final double MIN_FARE = 5;
     private RideRepository rideRepository;
 
     public void setRideRepository(RideRepository rideRepository) {
         this.rideRepository = rideRepository;
-    }
-
-    public double calculateFare(double distance, int time) {
-        double totalFare = distance * MIN_COST_PER_KM + time * COST_PER_TIME;
-        return Math.max(totalFare, MIN_FARE);
     }
 
     public InvoiceSummary calculateFare(Ride[] rides) {
@@ -22,11 +14,18 @@ public class InvoiceGenerator<rideRepository> {
         return new InvoiceSummary(rides.length, totalFare);
     }
 
-    public void addRides(String userId, Ride[] rides) {
+    public void addRides(String userId, Ride[] rides) throws InvoiceGeneratorException {
+        if (userId == "" || userId == null) {
+            throw new InvoiceGeneratorException(InvoiceGeneratorException.ExceptionType.EMPTY, "Empty userId");
+        }
         rideRepository.addRides(userId, rides);
     }
 
-    public InvoiceSummary getInvoiceSummary(String userId) {
-        return this.calculateFare(rideRepository.getRides(userId));
+    public InvoiceSummary getInvoiceSummary(String userId) throws InvoiceGeneratorException {
+        try{
+            return this.calculateFare(rideRepository.getRides(userId));
+        }catch (NullPointerException e) {
+            throw new InvoiceGeneratorException(InvoiceGeneratorException.ExceptionType.INVALID_USERID, "invalid userId");
+        }
     }
 }
